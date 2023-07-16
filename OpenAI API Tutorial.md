@@ -1,9 +1,9 @@
 # Introduction to OpenAI API
-***
+
 The OpenAI API allows developers to access and utilize OpenAI's artificial intelligence models in their applications. This document aims to provide a brief overview and examples of how to interact with the OpenAI API.
 
 ## Setting the API Key
-***
+
 Before using the OpenAI API, you need to authenticate yourself. This is done by setting an API key. The API key is a secret key provided by OpenAI for authenticating API requests. It should be kept confidential.
 
 ```python
@@ -14,7 +14,7 @@ openai.api_key = "your-key-here"
 Your OpenAI API key can be found in your OpenAI account dashboard under the API keys section. It is recommended to not hard-code the API key in your scripts. Instead, consider setting it as an environment variable and then fetching it in your script. Be very cautious to not expose it publicly, as it would give anyone access to your OpenAI account and could lead to misuse.
 
 ## Making a Request to the Completion Endpoint
-***
+
 You can make a request to the API using the `openai.Completion.create()` method. This method takes in several parameters, including `model` and `prompt`. The `model` parameter specifies the AI model to be used (for example, `text-davinci-003`), and `prompt` is the starting text that the AI model will complete.
 
 ```python
@@ -27,7 +27,7 @@ response = openai.Completion.create(
 OpenAI provides different models, each with its own strengths and use cases. For example, `text-davinci-003` is a versatile model that can be used for a wide range of tasks. Always refer to the OpenAI API documentation to choose the model that best fits your specific needs.
 
 ## Extracting the Response
-***
+
 The API response is a JSON object that includes information about the created completion. You can extract the generated text from the response with this line of code:
 
 ```python
@@ -37,7 +37,7 @@ print(response["choices"][0]["text"])
 The response contains many other fields that provide additional information about the request. For instance, `response["model"]` gives the model used for the request, `response["id"]` gives the unique identifier for the request, and `response["created"]` gives the timestamp of when the request was created. The actual AI-generated text is located within `response["choices"][0]["text"]`.
 
 ## OpenAI's Text and Chat Capabilities
-***
+
 ### Text Completion
 
 The OpenAI API can generate new text outputs based on a given text prompt. For text completion, you can specify a `prompt`, the `model`, and optionally, the maximum number of tokens (`max_tokens`) you want the output to contain. The `temperature` parameter controls randomness (lower values make output more focused, higher values make it more diverse).
@@ -142,7 +142,7 @@ response = openai.Completion.create(
 prompt="Categorize the following companies into the 4 categories of Tech, Energy, Luxury Goods or Investment: ..."
 ```
 
-***
+
 ### Chat Completions API
 
 The OpenAI API also supports multi-turn conversations. These are similar to text completions, but instead of a single prompt, you give the model a list of messages. Each message has a role (either "system", "user", or "assistant") and content. The model generates a response based on the entire conversation.
@@ -233,7 +233,7 @@ for q in user_msgs:
 ```
 
 ## Other Capabilities
-***
+
 ### Text Moderation
 
 OpenAI's API can be used to identify inappropriate content in text. This involves sending a request to the Moderation endpoint and checking the response's category scores.
@@ -322,7 +322,7 @@ print(chat_response["choices"][0]["message"]["content"])
 ```
 
 ## Conclusion
-***
+
 The OpenAI API provides a wide range of capabilities for developers to leverage powerful AI models in their applications. From text generation and summarization, to content moderation, to speech transcription and translation, OpenAI's models can be applied to a variety of use cases. By understanding how to use the OpenAI API effectively, you can unlock the potential of these models to enhance your applications and services.
 
 ### Additional Resources
