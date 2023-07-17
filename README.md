@@ -1,6 +1,6 @@
 # Introduction to OpenAI API
 
-The OpenAI API allows developers to access and utilize OpenAI's artificial intelligence models in their applications. This document aims to provide a brief overview and examples of how to interact with the OpenAI API. In addition, course materials and notes from DeepLearning.AI on Generative AI are included in the corresponding folders of this repository.
+The OpenAI API allows developers to access and utilize OpenAI's artificial intelligence models in their applications. This document aims to provide a brief overview and examples of how to interact with the OpenAI API. In addition, course materials and notes from DeepLearning.AI on Generative AI are included in the corresponding folders of this repository, and will be updated along the way.
 
 ## Setting the API Key
 
