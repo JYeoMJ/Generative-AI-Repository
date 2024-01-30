@@ -1,6 +1,7 @@
 ## Generative AI with Large Language Models (By DeepLearning.AI & Amazon Web Services)
 
-**About this Course**
+**About this Course:**
+
 In Generative AI with Large Language Models (LLMs), you’ll learn the fundamentals of how generative AI works, and how to deploy it in real-world applications.
 
 By taking this course, you'll learn to:
