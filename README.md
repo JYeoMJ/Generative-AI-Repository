@@ -53,6 +53,21 @@ response = openai.Completion.create(
 
 Text completion can be applied to a variety of tasks, such as drafting emails, writing code, answering questions, and more. Here are some examples:
 
+### Update on 31 Jan: Completions Endpoint has been deprecated. Use Chat Completions API instead.
+
+```python
+def get_completion(prompt, model="gpt-3.5-turbo"):
+    messages = [{"role": "user", "content": prompt}]
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=0,
+    )
+    return response.choices[0].message["content"]
+
+response = get_completion(prompt)
+```
+
 #### Text Completion for Find and Replace Task
 
 This example demonstrates how the OpenAI API can be used to replace a word (car) with another word (plane) and adjust the rest of the text accordingly.
