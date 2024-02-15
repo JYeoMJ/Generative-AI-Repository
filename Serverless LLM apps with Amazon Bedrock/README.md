@@ -1,13 +1,31 @@
 # Serverless LLM Amazon Bedrock (DeepLearning.AI Tutorial)
 
-Learn how to deploy a large language model-based application into production using serverless technology.
+**Learn how to deploy a large language model-based application into production using serverless technology.**
 
 * Learn how to prompt and customize your LLM responses using Amazon Bedrock.
 * Summarize audio conversations by first transcribing an audio file and passing the transcription to an LLM.
 * Deploy an event-driven audio summarizer that runs as new audio files are uploaded; using a serverless architecture.
 
+**References:**
+
+* [Amazon Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html)
+* [Generative AI Code Samples for Amazon Bedrock](https://community.aws/code/generative-ai)
+* [AWS Community Generative AI Community Blogposts](https://community.aws/generative-ai)
+
+**Table of Content:**
+- [Traditional Server Architectures](#item-1)
+- [Serverless Architectures](#item-2)
+- [Components for Serverless LLM Application Deployment using Amazon Bedrock](#item-3)
+- [Lab 1. First Generation with Amazon Bedrock](#item-4)
+- [Lab 2. Summarizing an Audio File](#item-5)
+- [Lab 3. Enabling Logging](#item-6)
+- [Lab 4. Deploy an AWS Lambda function](#item-7)
+- [Lab 5. Event-Driven Generation](#item-8)
+- [Concluding Notes](#item-9)
+
 ***
 
+ <a id="item-1"></a>
 ## Traditional Server Architectures
 
 * Server Management - Provisioning, Config, and maintainence of servers (physical or virtual) including operating system updates, patching, capacity planing and scaling.
@@ -18,7 +36,7 @@ Learn how to deploy a large language model-based application into production usi
 
 * Coupled to Infrastructure: Applications are often tightly bound to the underlying server infrastructure, making migrations complex.
 
-
+ <a id="item-2"></a>
 ## Serverless Architectures
 
 * Simplified Management: Serverless platforms (like AWS Lambda, Azure Functions, etc.) handle infrastructure provisioning, scaling, and maintenance, allowing developers to focus on code.
@@ -32,7 +50,7 @@ Learn how to deploy a large language model-based application into production usi
 * Event-Driven: Ideal for event-driven architectures, such as real-time data processing or responding to triggers like HTTP requests or data changes.
 
 ***
-
+ <a id="item-3"></a>
 ## Components for Serverless LLM Application Deployment using Amazon Bedrock
 
 * Serverless Functions: Core pieces of your application logic deployed as individual functions (e.g., AWS Lambda) that are triggered by events and scale automatically.
@@ -46,10 +64,8 @@ Learn how to deploy a large language model-based application into production usi
 * API Gateway (Optional): An AWS service to create and manage RESTful APIs to allow external applications to interact with your LLM functionality.
 
 ***
-
+ <a id="item-4"></a>
 ## 1. First Generation with Amazon Bedrock
-
-**Documentation Link:** [Amazon Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html)
 
 ### Setting up Bedrock Runtime:
 
@@ -163,7 +179,7 @@ kwargs = {
 }
 ```
 ***
-
+ <a id="item-5"></a>
 ## 2. Summarizing an Audio File
 
 Transcribing audio files and using LLMs to analyze. Outline:
@@ -290,7 +306,7 @@ For production cases (e.g. Serverless Cloud Architectures), define template in a
 
 The following prompt template instructs LLM to produce a structured JSON output with sentiment analysis and issue identification:
 
-```
+```python
 %%writefile prompt_template.txt
 I need to summarize a conversation. The transcript of the 
 conversation is between the <data> XML like tags.
@@ -362,7 +378,7 @@ print(generation)
 ```
 
 ***
-
+ <a id="item-6"></a>
 ## 3. Enabling Logging
 
 ```python
@@ -431,7 +447,7 @@ HTML(f'<a href="{aws_url}" target="_blank">GO TO AWS CONSOLE</a>')
 ```
 
 ***
-
+ <a id="item-7"></a>
 ## 4. Deploy an AWS Lambda function
 
 1. Setup - Import packages and access helpers functions
@@ -440,21 +456,126 @@ HTML(f'<a href="{aws_url}" target="_blank">GO TO AWS CONSOLE</a>')
 4. Deploy Lambda function
 5. Performing testing
 
+```python
 
-
-
-
+```
 
 ***
-
+ <a id="item-8"></a>
 ## 5. Event-Driven Generation
 
+### Importing Required Packages
 
+```python
+import boto3, os
 
+from helpers.Lambda_Helper import Lambda_Helper
+from helpers.S3_Helper import S3_Helper
 
+lambda_helper = Lambda_Helper()
+s3_helper = S3_Helper()
+
+bucket_name_text = os.environ['LEARNERS3BUCKETNAMETEXT']
+bucket_name_audio = os.environ['LEARNERS3BUCKETNAMEAUDIO']
+```
+
+### Deploying Lambda Function
+
+```python
+%%writefile lambda_function.py
+
+#############################################################
+#
+# This Lambda function is written to a file by the notebook 
+# It does not run in the notebook!
+#
+#############################################################
+
+import json
+import boto3
+import uuid
+import os
+
+s3_client = boto3.client('s3')
+transcribe_client = boto3.client('transcribe', region_name='us-west-2')
+
+def lambda_handler(event, context):
+    # Extract the bucket name and key from the incoming event
+    bucket = event['Records'][0]['s3']['bucket']['name']
+    key = event['Records'][0]['s3']['object']['key']
+
+    # One of a few different checks to ensure we don't end up in a recursive loop.
+    if key != "dialog.mp3": 
+        print("This demo only works with dialog.mp3.")
+        return
+
+    try:
+        
+        job_name = 'transcription-job-' + str(uuid.uuid4()) # Needs to be a unique name
+
+        response = transcribe_client.start_transcription_job(
+            TranscriptionJobName=job_name,
+            Media={'MediaFileUri': f's3://{bucket}/{key}'},
+            MediaFormat='mp3',
+            LanguageCode='en-US',
+            OutputBucketName= os.environ['S3BUCKETNAMETEXT'],  # specify the output bucket
+            OutputKey=f'{job_name}-transcript.json',
+            Settings={
+                'ShowSpeakerLabels': True,
+                'MaxSpeakerLabels': 2
+            }
+        )
+        
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps(f"Error occurred: {e}")
+        }
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps(f"Submitted transcription job for {key} from bucket {bucket}.")
+    }
+```
+
+```python
+lambda_helper.lambda_environ_variables = {'S3BUCKETNAMETEXT' : bucket_name_text}
+lambda_helper.deploy_function(["lambda_function.py"], function_name="LambdaFunctionTranscribe")
+
+lambda_helper.filter_rules_suffix = "mp3"
+lambda_helper.add_lambda_trigger(bucket_name_audio, function_name="LambdaFunctionTranscribe")
+
+s3_helper.upload_file(bucket_name_audio, 'dialog.mp3')
+s3_helper.list_objects(bucket_name_audio)
+```
+
+**Restart kernel if needed.**
+
+* If you run the code fairly quickly from start to finish, it's possible that the following code cell `s3_helper.list_objects(bucket_name_text)`` will give a "Not Found" error.
+* If waiting a few seconds (10 seconds) and re-running this cell does not resolve the error, then you can restart the kernel of the jupyter notebook.
+* Go to menu->Kernel->Restart Kernel.
+* Then run the code cells from the start of the notebook, waiting 2 seconds or so for each code cell to finish executing.
+
+```python
+s3_helper.list_objects(bucket_name_text)
+```
+
+**Re-run "download" code cell as needed**
+
+* It may take a few seconds for the results to be generated.
+* If you see a Not Found error, please wait a few seconds and then try running the `s3_helper.download_object` again.
+
+```python
+s3_helper.download_object(bucket_name_text, 'results.txt')
+
+from helpers.Display_Helper import Display_Helper
+display_helper = Display_Helper()
+display_helper.text_file('results.txt')
+```
 
 ***
-
+ <a id="item-9"></a>
 ## Concluding Notes
 
 
